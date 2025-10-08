@@ -162,13 +162,3 @@
 
 **Current Focus:** Start with Phase 1.1 - Project Structure Setup
 
-*** next prompt *** 
-1.reduce type for normal boss attacks to type to defend -- only special boss moves should be that long 
-2.remove press space or enter here since it is not necessary
-HOW TO FIGHT:
-
-1️⃣ Type any limb word you see
-
-2️⃣ Press SPACE or ENTER
-
-3️⃣ Watch it EXPLODE! 💥
