@@ -298,4 +298,4 @@ Contributions welcome! Focus areas:
 
 ---
 
-**Key Rush** - Where typing meets cyberpunk action! ⚔️🔥🎮✨
+**Key Rush** - Where typing meets rogue-like action! ⚔️🔥
