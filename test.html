@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Rush - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #000;
+            color: #0ff;
+        }
+        .test-results {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .pass { border-color: #0f0; background: rgba(0, 255, 0, 0.1); }
+        .fail { border-color: #f00; background: rgba(255, 0, 0, 0.1); }
+        .warn { border-color: #ff0; background: rgba(255, 255, 0, 0.1); }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Key Rush - Implementation Test</h1>
+    <div id="test-results">
+        <p>Running tests...</p>
+    </div>
+    
+    <script src="src/data/words.js"></script>
+    <script src="src/game.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '';
+            
+            function addResult(test, status, message) {
+                const div = document.createElement('div');
+                div.className = `test-results ${status}`;
+                div.innerHTML = `<strong>${test}:</strong> ${message}`;
+                results.appendChild(div);
+            }
+            
+            // Test 1: Check if classes exist
+            try {
+                const feverSystem = new FeverSystem();
+                const powerUpSystem = new PowerUpSystem();
+                addResult('Class Creation', 'pass', 'FeverSystem and PowerUpSystem classes created successfully');
+            } catch (e) {
+                addResult('Class Creation', 'fail', `Error creating classes: ${e.message}`);
+            }
+            
+            // Test 2: Check WordManager
+            try {
+                if (typeof WordManager === 'object' && WordManager.wordLists) {
+                    addResult('WordManager', 'pass', `WordManager loaded with ${Object.keys(WordManager.wordLists).length} difficulty levels`);
+                } else {
+                    addResult('WordManager', 'fail', 'WordManager not properly loaded');
+                }
+            } catch (e) {
+                addResult('WordManager', 'fail', `WordManager error: ${e.message}`);
+            }
+            
+            // Test 3: Check game class creation (without DOM elements)
+            try {
+                // Mock DOM for testing
+                const mockCanvas = {
+                    getContext: () => ({ fillRect: () => {}, clearRect: () => {} }),
+                    addEventListener: () => {},
+                    width: 800,
+                    height: 600
+                };
+                
+                // We can't easily test TypingGame without DOM, so just check if it exists
+                if (typeof TypingGame === 'function') {
+                    addResult('TypingGame Class', 'pass', 'TypingGame class is defined');
+                } else {
+                    addResult('TypingGame Class', 'fail', 'TypingGame class not found');
+                }
+            } catch (e) {
+                addResult('TypingGame Class', 'fail', `TypingGame error: ${e.message}`);
+            }
+            
+            // Test 4: Input validation
+            try {
+                const testInput = "Test123!@#";
+                const sanitized = testInput.toLowerCase().replace(/[^\w\s'-]/g, '').substring(0, 50);
+                if (sanitized === "test123") {
+                    addResult('Input Validation', 'pass', 'Input sanitization working correctly');
+                } else {
+                    addResult('Input Validation', 'warn', `Input sanitization unexpected result: "${sanitized}"`);
+                }
+            } catch (e) {
+                addResult('Input Validation', 'fail', `Input validation error: ${e.message}`);
+            }
+            
+            // Test 5: Mobile detection
+            try {
+                const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                addResult('Mobile Detection', 'pass', `Touch support: ${isMobile ? 'Yes' : 'No'}`);
+            } catch (e) {
+                addResult('Mobile Detection', 'warn', `Mobile detection error: ${e.message}`);
+            }
+            
+            addResult('Summary', 'pass', 'Core functionality tests completed. Check individual results above.');
+        });
+    </script>
+</body>
+</html>

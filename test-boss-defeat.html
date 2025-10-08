@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Defeat Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .test-output {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #00ffff; }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Boss Defeat → Game Over Test</h1>
+    <button onclick="runTest()">Run Test</button>
+    <button onclick="runManualTest()">Manual Test (Open Game)</button>
+    <div class="test-output" id="output"></div>
+
+    <script src="src/data/words.js"></script>
+    <script src="src/systems/BossSystem.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = message;
+            output.appendChild(line);
+        }
+
+        function runTest() {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+
+            log('🧪 Testing Boss Defeat Behavior...', 'info');
+            log('', 'info');
+
+            try {
+                // Test 1: Boss System HP depletion
+                log('Test 1: Boss System HP Tracking', 'info');
+                const bossSystem = new BossSystem();
+                bossSystem.currentHP = 100;
+                log(`  Initial HP: ${bossSystem.currentHP}`, 'info');
+
+                bossSystem.takeDamage(20);
+                log(`  After 20 damage: ${bossSystem.currentHP}`, 'info');
+
+                bossSystem.takeDamage(80);
+                log(`  After 80 more damage: ${bossSystem.currentHP}`, 'info');
+
+                if (bossSystem.isDead()) {
+                    log('  ✅ isDead() correctly returns true when HP = 0', 'pass');
+                } else {
+                    log('  ❌ isDead() should return true when HP = 0', 'fail');
+                }
+                log('', 'info');
+
+                // Test 2: Verify noDamageTaken flag
+                log('Test 2: Damage Tracking', 'info');
+                if (!bossSystem.noDamageTaken) {
+                    log('  ✅ noDamageTaken correctly set to false after damage', 'pass');
+                } else {
+                    log('  ❌ noDamageTaken should be false after taking damage', 'fail');
+                }
+                if (!bossSystem.perfectBoss) {
+                    log('  ✅ perfectBoss correctly set to false after damage', 'pass');
+                } else {
+                    log('  ❌ perfectBoss should be false after taking damage', 'fail');
+                }
+                log('', 'info');
+
+                // Test 3: Hearts calculation
+                log('Test 3: Hearts Display', 'info');
+                bossSystem.currentHP = 100;
+                log(`  HP: 100 → Hearts: ${bossSystem.getHearts()} (expected: 5)`, 'info');
+                bossSystem.currentHP = 50;
+                log(`  HP: 50 → Hearts: ${bossSystem.getHearts()} (expected: 3)`, 'info');
+                bossSystem.currentHP = 20;
+                log(`  HP: 20 → Hearts: ${bossSystem.getHearts()} (expected: 1)`, 'info');
+                bossSystem.currentHP = 0;
+                log(`  HP: 0 → Hearts: ${bossSystem.getHearts()} (expected: 0)`, 'info');
+                if (bossSystem.getHearts() === 0) {
+                    log('  ✅ Hearts display correctly shows 0 when HP depleted', 'pass');
+                } else {
+                    log('  ❌ Hearts should be 0 when HP is 0', 'fail');
+                }
+                log('', 'info');
+
+                // Test 4: Score calculation with defeat
+                log('Test 4: Score Calculation on Defeat', 'info');
+                bossSystem.initializeBoss('glitchSpider', ['test1', 'test2', 'test3', 'test4', 'test5', 'test6']);
+                bossSystem.destroyedLimbs = 3; // Only destroyed half
+                bossSystem.totalAttempts = 5;
+                bossSystem.successfulHits = 3;
+                bossSystem.currentHP = 0;
+                bossSystem.noDamageTaken = false;
+                const scoreData = bossSystem.calculateScore();
+                log(`  Limbs destroyed: ${scoreData.limbsDestroyed}/${scoreData.totalLimbs}`, 'info');
+                log(`  Accuracy: ${(scoreData.accuracy * 100).toFixed(1)}%`, 'info');
+                log(`  Total score: ${scoreData.totalScore}`, 'info');
+                log(`  No damage taken: ${scoreData.noDamageTaken}`, 'info');
+                if (scoreData.totalScore > 0) {
+                    log('  ✅ Partial score awarded even on defeat', 'pass');
+                } else {
+                    log('  ❌ Should award some score even on defeat', 'fail');
+                }
+                log('', 'info');
+
+                log('🎉 All Boss System tests completed!', 'pass');
+                log('', 'info');
+                log('ℹ️ To test full game integration:', 'info');
+                log('  1. Click "Manual Test" button to open the game', 'info');
+                log('  2. Open browser console (F12) to see debug logs', 'info');
+                log('  3. Type 1 word to trigger boss (testing mode)', 'info');
+                log('  4. Let boss attacks hit you (don\'t type defense words)', 'info');
+                log('  5. Watch console for heart values after each attack:', 'info');
+                log('     5 ❤️ → 4 ❤️ → 3 ❤️ → 2 ❤️ → 1 ❤️ → 0 ❤️ (DEFEAT)', 'info');
+                log('  6. After 5 attacks (1 heart each), should reach 0 hearts', 'info');
+                log('  7. Boss defeat screen should show for 4 seconds', 'info');
+                log('  8. Game Over screen should appear after that', 'info');
+                log('', 'info');
+                log('🐛 Fixed Issues:', 'info');
+                log('  • All bosses now deal exactly 1 heart (20 damage)', 'info');
+                log('  • Fixed race condition causing duplicate defeat calls', 'info');
+                log('  • Console logs now show hearts first, HP in parentheses', 'info');
+
+            } catch (error) {
+                log(`❌ Test failed with error: ${error.message}`, 'fail');
+                log(`   Stack: ${error.stack}`, 'fail');
+            }
+        }
+
+        function runManualTest() {
+            window.open('index.html', '_blank');
+            log('🎮 Game opened in new window', 'info');
+            log('', 'info');
+            log('Manual Test Instructions:', 'info');
+            log('1. Press F12 to open browser console', 'info');
+            log('2. Start the game', 'info');
+            log('3. Type 1 word to trigger boss battle', 'info');
+            log('4. Do NOT type defense words when attacks come', 'info');
+            log('5. Watch console for heart values after each attack:', 'info');
+            log('   5 ❤️ → 4 ❤️ → 3 ❤️ → 2 ❤️ → 1 ❤️ → 0 ❤️', 'info');
+            log('6. Watch screen: each attack removes exactly 1 heart', 'info');
+            log('7. Verify defeat triggers ONLY when 0 hearts remain', 'info');
+            log('8. Verify boss defeat overlay shows stats for 4s', 'info');
+            log('9. Verify game over screen appears afterward', 'info');
+        }
+
+        // Auto-run test on load
+        window.addEventListener('DOMContentLoaded', runTest);
+    </script>
+</body>
+</html>

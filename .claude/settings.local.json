@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start index.html)",
+      "Bash(start test.html)",
+      "Bash(git init:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(start test-runner.html)",
+      "Bash(start test-boss-defeat.html)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd Boss Battle System and Frenzy Mode with comprehensive updates\n\nMajor Features Added:\n- 🎯 Boss Battle System: Epic encounters every 12 words with 4 unique bosses\n  - Glitch Spider, Code Hydra, Syntax Golem, Bug Kraken\n  - Limb destruction mechanics with auto-submit\n  - Attack/defense system (2.5s warnings for normal attacks)\n  - Special moves (12s chants when 1 limb remaining)\n  - HP system with 5 hearts and damage feedback\n  - Input auto-clears after taking damage\n\n- 🔥 Frenzy Mode: 30-second sentence typing challenges every 5 words\n  - Snake-style word visualization\n  - Continuous countdown timer (no pause)\n  - Time penalties (-2s per error, debounced)\n  - Real-time WPM and accuracy tracking\n  - Immediate start (removed countdown delay)\n\nSystem Improvements:\n- Refactored architecture: src/ folder structure\n- BossSystem.js: Dedicated boss battle mechanics\n- Fixed frenzy timer to count continuously\n- Fixed attack warning positioning and blinking\n- Updated README with complete documentation\n\nGame Balance:\n- Boss triggers: Every 12 words (priority over frenzy)\n- Frenzy triggers: Every 5 words\n- Boss attacks scale with remaining limbs (8s→2s intervals)\n- Special moves only on final limb for dramatic climax\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

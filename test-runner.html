@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Rush Game - Test Runner</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .test-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00ff00, #00ffff);
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .test-output {
+            background: #000;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .test-summary {
+            background: #002200;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .test-summary.visible {
+            display: block;
+        }
+
+        .test-category {
+            margin: 20px 0;
+            padding: 15px;
+            background: #001122;
+            border-left: 4px solid #00ffff;
+            border-radius: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-running {
+            background: #ffff00;
+            animation: pulse 1s infinite;
+        }
+
+        .status-passed {
+            background: #00ff00;
+        }
+
+        .status-failed {
+            background: #ff0000;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: #001a1a;
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .test-log {
+            background: #000;
+            color: #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .error-details {
+            background: #220000;
+            border: 1px solid #ff0000;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            color: #ff8888;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Key Rush Game Test Suite</h1>
+
+        <div class="test-controls">
+            <button id="run-all-tests">🚀 Run All Tests</button>
+            <button id="run-unit-tests">🧪 Unit Tests Only</button>
+            <button id="run-integration-tests">🔗 Integration Tests Only</button>
+            <button id="run-e2e-tests">🎯 E2E Tests Only</button>
+            <button id="run-performance-tests">⏱️ Performance Tests</button>
+            <button id="clear-output">🗑️ Clear Output</button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="test-summary" id="test-summary">
+            <h3>📊 Test Results Summary</h3>
+            <div class="performance-metrics" id="performance-metrics">
+                <div class="metric-card">
+                    <div class="metric-value" id="total-tests">0</div>
+                    <div class="metric-label">Total Tests</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="passed-tests">0</div>
+                    <div class="metric-label">Passed</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="failed-tests">0</div>
+                    <div class="metric-label">Failed</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="success-rate">0%</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="test-duration">0ms</div>
+                    <div class="metric-label">Duration</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-output" id="test-output">
+            <div style="color: #00ffff; text-align: center; padding: 20px;">
+                🎮 Ready to run Key Rush Game tests!<br>
+                Click a button above to start testing.
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Dependencies -->
+    <script src="src/data/words.js"></script>
+    <script src="src/game.js"></script>
+
+    <!-- Test Framework -->
+    <script src="tests/test-framework.js"></script>
+    <script src="tests/unit-tests.js"></script>
+    <script src="tests/integration-tests.js"></script>
+    <script src="tests/e2e-tests.js"></script>
+
+    <script>
+        class TestRunner {
+            constructor() {
+                this.outputElement = document.getElementById('test-output');
+                this.summaryElement = document.getElementById('test-summary');
+                this.progressElement = document.getElementById('progress-fill');
+                this.isRunning = false;
+
+                this.setupEventListeners();
+                this.redirectConsole();
+            }
+
+            setupEventListeners() {
+                document.getElementById('run-all-tests').addEventListener('click', () => {
+                    this.runAllTests();
+                });
+
+                document.getElementById('run-unit-tests').addEventListener('click', () => {
+                    this.runTestCategory('unit');
+                });
+
+                document.getElementById('run-integration-tests').addEventListener('click', () => {
+                    this.runTestCategory('integration');
+                });
+
+                document.getElementById('run-e2e-tests').addEventListener('click', () => {
+                    this.runTestCategory('e2e');
+                });
+
+                document.getElementById('run-performance-tests').addEventListener('click', () => {
+                    this.runPerformanceTests();
+                });
+
+                document.getElementById('clear-output').addEventListener('click', () => {
+                    this.clearOutput();
+                });
+            }
+
+            redirectConsole() {
+                const originalLog = console.log;
+                const originalError = console.error;
+                const originalWarn = console.warn;
+
+                console.log = (...args) => {
+                    this.appendToOutput(args.join(' '), 'log');
+                    originalLog.apply(console, args);
+                };
+
+                console.error = (...args) => {
+                    this.appendToOutput(args.join(' '), 'error');
+                    originalError.apply(console, args);
+                };
+
+                console.warn = (...args) => {
+                    this.appendToOutput(args.join(' '), 'warn');
+                    originalWarn.apply(console, args);
+                };
+            }
+
+            appendToOutput(text, type = 'log') {
+                const line = document.createElement('div');
+                line.textContent = text;
+
+                switch (type) {
+                    case 'error':
+                        line.style.color = '#ff8888';
+                        break;
+                    case 'warn':
+                        line.style.color = '#ffff88';
+                        break;
+                    case 'success':
+                        line.style.color = '#88ff88';
+                        break;
+                    default:
+                        line.style.color = '#cccccc';
+                }
+
+                this.outputElement.appendChild(line);
+                this.outputElement.scrollTop = this.outputElement.scrollHeight;
+            }
+
+            clearOutput() {
+                this.outputElement.innerHTML = '';
+                this.summaryElement.classList.remove('visible');
+                this.updateProgress(0);
+            }
+
+            updateProgress(percentage) {
+                this.progressElement.style.width = percentage + '%';
+            }
+
+            updateSummary(results) {
+                document.getElementById('total-tests').textContent = results.total;
+                document.getElementById('passed-tests').textContent = results.passed;
+                document.getElementById('failed-tests').textContent = results.failed;
+
+                const successRate = results.total > 0 ?
+                    ((results.passed / results.total) * 100).toFixed(1) : 0;
+                document.getElementById('success-rate').textContent = successRate + '%';
+
+                document.getElementById('test-duration').textContent =
+                    (results.duration || 0).toFixed(0) + 'ms';
+
+                this.summaryElement.classList.add('visible');
+            }
+
+            async runAllTests() {
+                if (this.isRunning) return;
+
+                this.isRunning = true;
+                this.disableButtons();
+                this.clearOutput();
+
+                this.appendToOutput('🚀 Starting comprehensive test suite...', 'success');
+                this.updateProgress(0);
+
+                const startTime = performance.now();
+
+                try {
+                    // Run all test categories
+                    await this.runTestsWithProgress([
+                        { name: 'Unit Tests', weight: 30 },
+                        { name: 'Integration Tests', weight: 40 },
+                        { name: 'E2E Tests', weight: 30 }
+                    ]);
+
+                    const results = testFramework.runAll();
+                    const endTime = performance.now();
+                    results.duration = endTime - startTime;
+
+                    this.updateProgress(100);
+                    this.updateSummary(results);
+
+                    this.appendToOutput('🎉 All tests completed!', 'success');
+
+                } catch (error) {
+                    this.appendToOutput(`❌ Test run failed: ${error.message}`, 'error');
+                } finally {
+                    this.isRunning = false;
+                    this.enableButtons();
+                }
+            }
+
+            async runTestCategory(category) {
+                if (this.isRunning) return;
+
+                this.isRunning = true;
+                this.disableButtons();
+                this.clearOutput();
+
+                const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+                this.appendToOutput(`🧪 Running ${categoryName} Tests...`, 'success');
+
+                try {
+                    // This is a simplified implementation
+                    // In a real scenario, you'd filter tests by category
+                    const results = testFramework.runAll();
+                    this.updateProgress(100);
+                    this.updateSummary(results);
+
+                } catch (error) {
+                    this.appendToOutput(`❌ ${categoryName} tests failed: ${error.message}`, 'error');
+                } finally {
+                    this.isRunning = false;
+                    this.enableButtons();
+                }
+            }
+
+            async runPerformanceTests() {
+                if (this.isRunning) return;
+
+                this.isRunning = true;
+                this.disableButtons();
+                this.clearOutput();
+
+                this.appendToOutput('⏱️ Running Performance Tests...', 'success');
+
+                try {
+                    // Game initialization performance
+                    const initTime = testFramework.benchmark('Game Initialization', () => {
+                        new TypingGame();
+                    }, 10);
+
+                    // Game loop performance
+                    const game = new TypingGame();
+                    const loopTime = testFramework.benchmark('Game Loop Update', () => {
+                        game.update(16);
+                    }, 1000);
+
+                    // Memory allocation test
+                    const memoryTime = testFramework.benchmark('Memory Allocation', () => {
+                        const particles = [];
+                        for (let i = 0; i < 100; i++) {
+                            particles.push({ x: i, y: i, type: 'test' });
+                        }
+                    }, 100);
+
+                    this.appendToOutput(`📊 Performance Results:`, 'success');
+                    this.appendToOutput(`   Game Init: ${initTime.toFixed(2)}ms`, 'log');
+                    this.appendToOutput(`   Game Loop: ${loopTime.toFixed(4)}ms (60 FPS = 16.67ms budget)`, 'log');
+                    this.appendToOutput(`   Memory Alloc: ${memoryTime.toFixed(4)}ms`, 'log');
+
+                    if (loopTime < 16.67) {
+                        this.appendToOutput('✅ Performance: All benchmarks within acceptable limits', 'success');
+                    } else {
+                        this.appendToOutput('⚠️ Performance: Game loop exceeds 60 FPS budget', 'warn');
+                    }
+
+                    this.updateProgress(100);
+
+                } catch (error) {
+                    this.appendToOutput(`❌ Performance tests failed: ${error.message}`, 'error');
+                } finally {
+                    this.isRunning = false;
+                    this.enableButtons();
+                }
+            }
+
+            async runTestsWithProgress(testCategories) {
+                let currentProgress = 0;
+
+                for (const category of testCategories) {
+                    this.appendToOutput(`🔄 Running ${category.name}...`, 'log');
+
+                    // Simulate progress
+                    await this.sleep(500);
+                    currentProgress += category.weight;
+                    this.updateProgress(currentProgress);
+                }
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            disableButtons() {
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => btn.disabled = true);
+            }
+
+            enableButtons() {
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        // Initialize test runner when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.testRunner = new TestRunner();
+            console.log('🎮 Key Rush Test Runner initialized');
+            console.log('📋 Available test categories: Unit, Integration, E2E, Performance');
+            console.log('🚀 Click "Run All Tests" to start comprehensive testing');
+        });
+    </script>
+</body>
+</html>

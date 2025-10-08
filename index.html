@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Rush</title>
+    <link rel="stylesheet" href="src/assets/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="hud">
+                <div class="hud-item">Floor: <span id="floor">1</span></div>
+                <div class="hud-item">Score: <span id="score">0</span></div>
+                <div class="hud-item">WPM: <span id="wpm">0</span></div>
+                <div class="hud-item">Combo: <span id="combo">0</span></div>
+            </div>
+            
+            <div id="fever-display-center" class="hidden">
+                <div id="fever-label">
+                    <span id="fever-level">Cool</span>
+                    <span id="fever-multiplier">×1.0</span>
+                </div>
+                <div id="fever-bar">
+                    <div id="fever-fill"></div>
+                    <div id="fever-glow"></div>
+                </div>
+            </div>
+            
+            <div id="word-display">
+                <div id="branch-1" class="word-branch active">
+                    <div class="power-up-icon"></div>
+                    <span class="word-text">loading</span>
+                </div>
+                <div id="branch-2" class="word-branch">
+                    <div class="power-up-icon"></div>
+                    <span class="word-text">please</span>
+                </div>
+                <div class="tab-hint">Press TAB to switch</div>
+            </div>
+            
+            <div id="active-powerups">
+                <!-- Power-ups will be added here dynamically -->
+            </div>
+            
+            <div id="fever-rush-overlay" class="hidden">
+                <div class="fever-rush-text">
+                    <h1>FEVER RUSH!</h1>
+                    <p id="fever-rush-timer">10s</p>
+                </div>
+            </div>
+            
+            <div id="freeze-flash-overlay" class="hidden">
+                <div class="freeze-explosion-text">FROZEN!</div>
+                <div class="ice-particles-container"></div>
+            </div>
+            
+            <div id="frenzy-mode-overlay" class="hidden">
+                <div class="frenzy-announcement">
+                    <h1>FRENZY MODE!</h1>
+                    <p>Type the entire sentence!</p>
+                    <div class="countdown-display">
+                        <span id="frenzy-countdown">3</span>
+                    </div>
+                </div>
+                
+                <div id="frenzy-ui-container" class="hidden">
+                    <!-- Progress tracking -->
+                    <div class="frenzy-header">
+                        <div class="frenzy-stats">
+                            <span id="frenzy-word-counter">Word 1 of 0</span>
+                            <span id="frenzy-timer">⏱ 0s</span>
+                            <span id="frenzy-wpm">WPM: 0</span>
+                            <span id="frenzy-accuracy">Acc: 100%</span>
+                            <div id="timer-feedback" class="timer-feedback hidden"></div>
+                        </div>
+                        <div class="frenzy-progress-bar">
+                            <div id="frenzy-progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Massive WPM and Accuracy display -->
+                    <div class="frenzy-performance-display">
+                        <div class="massive-wpm">
+                            <span class="performance-label">WPM</span>
+                            <span id="massive-wpm-value" class="performance-value">0</span>
+                        </div>
+                        <div class="massive-accuracy">
+                            <span class="performance-label">ACC</span>
+                            <span id="massive-accuracy-value" class="performance-value">100%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="snake-container" class="snake-container">
+                    <!-- Snake segments will be generated here -->
+                </div>
+                
+                <div class="frenzy-controls-hint">
+                    <div class="frenzy-space-hint">Press <strong>SPACE</strong> to advance to next word</div>
+                    <div class="frenzy-backspace-hint">Press <strong>BACKSPACE</strong> to correct mistakes</div>
+                </div>
+            </div>
+            
+            <div id="frenzy-complete-overlay" class="hidden">
+                <div class="frenzy-complete-announcement">
+                    <h1>FRENZY COMPLETE!</h1>
+                    <p class="bonus-text">MASSIVE BONUS!</p>
+                    <div class="frenzy-performance-stats">
+                        <div class="performance-metric">
+                            <span class="metric-label">WPM:</span>
+                            <span id="final-frenzy-wpm" class="metric-value">0</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Accuracy:</span>
+                            <span id="final-frenzy-accuracy" class="metric-value">100%</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Perfect Words:</span>
+                            <span id="frenzy-perfect-words" class="metric-value">0/0</span>
+                        </div>
+                    </div>
+                    <div class="score-display">
+                        <span id="frenzy-bonus-score">+0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="frenzy-timeout-overlay" class="hidden">
+                <div class="frenzy-timeout-announcement">
+                    <h1>TIME'S UP!</h1>
+                    <p class="timeout-text">Frenzy mode ended</p>
+                    <div class="frenzy-performance-stats">
+                        <div class="performance-metric">
+                            <span class="metric-label">WPM:</span>
+                            <span id="timeout-frenzy-wpm" class="metric-value">0</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Accuracy:</span>
+                            <span id="timeout-frenzy-accuracy" class="metric-value">100%</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Words:</span>
+                            <span id="timeout-words-completed" class="metric-value">0/0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boss Battle Overlays -->
+            <div id="boss-mode-overlay" class="hidden">
+                <div class="boss-announcement">
+                    <h1 id="boss-name">TYRANT APPROACHING!</h1>
+                    <p id="boss-description">Prepare for battle...</p>
+                    <div class="countdown-display">
+                        <span id="boss-countdown">3</span>
+                    </div>
+                </div>
+
+                <div id="boss-ui-container" class="hidden">
+                    <!-- Boss Header with HP, Timer and Progress -->
+                    <div class="boss-header">
+                        <div class="boss-stats">
+                            <div id="boss-hp-display" class="boss-hp-hearts">
+                                <span class="heart">❤️</span>
+                                <span class="heart">❤️</span>
+                                <span class="heart">❤️</span>
+                                <span class="heart">❤️</span>
+                                <span class="heart">❤️</span>
+                            </div>
+                            <span id="boss-type-display">GLITCH SPIDER</span>
+                            <span id="boss-timer">⏱ 45s</span>
+                            <span id="boss-limb-counter">Limbs: 6/6</span>
+                        </div>
+                        <div class="boss-progress-bar">
+                            <div id="boss-progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Attack Warning Display -->
+                    <div id="boss-attack-warning" class="boss-attack-warning hidden">
+                        <div class="warning-content">
+                            <h2>⚠️ INCOMING ATTACK!</h2>
+                            <p id="attack-name-display">Web Shot</p>
+                            <div class="defense-prompt">
+                                <span style="font-size: 18px; margin-bottom: 10px;">TYPE TO DEFEND:</span>
+                                <div id="defense-word-display" class="defense-word-display">
+                                    <!-- Letters will be generated here -->
+                                </div>
+                            </div>
+                            <div class="warning-countdown" id="attack-warning-countdown">2.5s</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boss Limb Display Container -->
+                <div id="boss-limbs-container" class="boss-limbs-container hidden">
+                    <!-- Limbs will be generated dynamically here -->
+                </div>
+
+                <div class="boss-controls-hint">
+                    <div class="boss-typing-hint">
+                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">
+                            ⌨️ TYPE ANY LIMB WORD → 💥 AUTO-DESTROY!
+                        </div>
+                        <div style="font-size: 16px; opacity: 0.9;">
+                            Matching limbs glow GREEN • Destroy all limbs before time runs out!
+                        </div>
+                        <div id="boss-input-display" style="margin-top: 15px; font-size: 32px; font-weight: bold; color: #00ff41; text-shadow: 0 0 10px #00ff41; min-height: 40px;">
+                            <span id="boss-input-text"></span><span class="boss-cursor">|</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="boss-victory-overlay" class="hidden">
+                <div class="boss-victory-announcement">
+                    <h1>TYRANT DEFEATED!</h1>
+                    <p class="victory-text">MASSIVE REWARDS!</p>
+                    <div class="boss-performance-stats">
+                        <div class="performance-metric">
+                            <span class="metric-label">Limbs Destroyed:</span>
+                            <span id="boss-limbs-destroyed" class="metric-value">0/0</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Accuracy:</span>
+                            <span id="boss-accuracy" class="metric-value">100%</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Time Taken:</span>
+                            <span id="boss-time-taken" class="metric-value">0s</span>
+                        </div>
+                        <div class="performance-metric perfect-badge">
+                            <span id="boss-perfect-badge" class="hidden">✨ PERFECT! ✨</span>
+                        </div>
+                    </div>
+                    <div class="score-display boss-score-display">
+                        <span id="boss-total-score">+0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="boss-timeout-overlay" class="hidden">
+                <div class="boss-timeout-announcement">
+                    <h1>TYRANT ESCAPED!</h1>
+                    <p class="timeout-text">The boss got away...</p>
+                    <div class="boss-performance-stats">
+                        <div class="performance-metric">
+                            <span class="metric-label">Limbs Destroyed:</span>
+                            <span id="timeout-boss-limbs" class="metric-value">0/0</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Accuracy:</span>
+                            <span id="timeout-boss-accuracy" class="metric-value">100%</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Attacks Blocked:</span>
+                            <span id="timeout-attacks-blocked" class="metric-value">0/0</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Time Survived:</span>
+                            <span id="timeout-time-survived" class="metric-value">0s</span>
+                        </div>
+                    </div>
+                    <div class="score-display boss-score-display">
+                        <span id="timeout-boss-score">+0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="boss-defeat-overlay" class="hidden">
+                <div class="boss-defeat-announcement">
+                    <h1>💀 DEFEATED! 💀</h1>
+                    <p class="defeat-text" id="boss-defeat-text">The GLITCH SPIDER destroyed you!</p>
+                    <div class="boss-performance-stats">
+                        <div class="performance-metric">
+                            <span class="metric-label">Limbs Destroyed:</span>
+                            <span id="defeat-boss-limbs" class="metric-value">0/0</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Accuracy:</span>
+                            <span id="defeat-boss-accuracy" class="metric-value">100%</span>
+                        </div>
+                        <div class="performance-metric">
+                            <span class="metric-label">Attacks Blocked:</span>
+                            <span id="defeat-attacks-blocked" class="metric-value">0/0</span>
+                        </div>
+                    </div>
+                    <div class="score-display boss-score-display">
+                        <span id="defeat-boss-score">+0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Special Move Overlay -->
+            <div id="boss-special-move-overlay" class="hidden">
+                <div id="special-move-effects-container">
+                    <!-- Boss-specific animation effects will be added here -->
+                </div>
+                <div class="special-move-announcement">
+                    <h1 id="special-move-name">🔥 ULTIMATE ATTACK! 🔥</h1>
+                    <p id="special-move-subtitle">Type the chant to survive!</p>
+                    <div class="special-damage-warning">💀 DAMAGE: 3 ❤️ HEARTS</div>
+                    <div id="special-move-chant-display" class="special-chant-display">
+                        <!-- Character spans will be generated here -->
+                    </div>
+                    <div class="special-warning-countdown" id="special-countdown">12.0s</div>
+                </div>
+            </div>
+
+            <div id="typing-area">
+                <input type="text" id="word-input" placeholder="Type the highlighted word..." 
+                       autocomplete="off" autocapitalize="off" spellcheck="false">
+            </div>
+            
+            <div id="position-indicator">
+                <div id="position-bar">
+                    <div id="player-marker"></div>
+                </div>
+                <div class="position-labels">
+                    <span>DANGER</span>
+                    <span>SAFE</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="start-screen" class="screen">
+            <div class="screen-content">
+                <h1>Key Rush</h1>
+                <p>Type words quickly to stay ahead of the scrolling wall!</p>
+                <ul class="instructions">
+                    <li>Use TAB to switch between word branches</li>
+                    <li>Type fast to move forward</li>
+                    <li>Don't let the wall catch you!</li>
+                    <li>Press ENTER or SPACE to start</li>
+                </ul>
+                
+                <div class="game-guide">
+                    <div class="guide-section">
+                        <h3>Scoring & Fever</h3>
+                        <ul class="guide-list">
+                            <li><strong>Stay right:</strong> Right side = SAFE zone (higher score multiplier)</li>
+                            <li><strong>Build fever:</strong> Fast typing + right wall = fever heat</li>
+                            <li><strong>Fever levels:</strong> Cool → Warm → Hot → Blazing → FEVER RUSH!</li>
+                            <li><strong>Score multipliers:</strong> 1.0× → 1.2× → 1.5× → 2.0× → 3.0×</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="guide-section">
+                        <h3>Power-Ups</h3>
+                        <div class="legend-grid">
+                            <div class="legend-item">
+                                <span class="legend-icon speed">⚡</span>
+                                <span class="legend-text"><strong>Speed:</strong> Boost forward movement</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon freeze">❄️</span>
+                                <span class="legend-text"><strong>Freeze:</strong> Stop danger wall completely</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon shield">🛡️</span>
+                                <span class="legend-text"><strong>Shield:</strong> Protect from typing errors</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon multiplier">💎</span>
+                                <span class="legend-text"><strong>Multiplier:</strong> Double your score</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon timewarp">🌀</span>
+                                <span class="legend-text"><strong>TimeWarp:</strong> Slow down scrolling</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon laser">🎯</span>
+                                <span class="legend-text"><strong>LaserFocus:</strong> Errors move you forward</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="start-btn">Start Game</button>
+            </div>
+        </div>
+        
+        <div id="game-over-screen" class="screen hidden">
+            <div class="screen-content">
+                <h2>Game Over!</h2>
+                <div id="final-stats">
+                    <p>Final Score: <span id="final-score">0</span></p>
+                    <p>Best WPM: <span id="best-wpm">0</span></p>
+                    <p>Words Typed: <span id="words-typed">0</span></p>
+                </div>
+                <p class="keyboard-hint">Press ENTER or SPACE to restart</p>
+                <button id="restart-btn">Try Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="src/data/words.js"></script>
+    <script src="src/systems/BossSystem.js"></script>
+    <script src="src/game.js"></script>
+</body>
+</html>
